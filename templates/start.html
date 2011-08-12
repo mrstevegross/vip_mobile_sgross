@@ -1,0 +1,62 @@
+{% extends "wrapper.html" %}
+
+{% block main %}
+<section>
+	<header class="primary">
+		<fieldset>
+			<form role='search' name='poll-lookup' action="?" method='post'>
+				<div>
+					<label for="address">Address</label>
+					<input type="search" name="address" id="address" />
+				</div>
+				<div>
+					<input type="submit" class="button" value="Search" />
+				</div>
+			</form>
+			<div class="confirm">
+				<p><strong>Caution:</strong> To find your correct polling place, you need to be currently at your registered address. Double check your polling place location with your local election official. Are you at home?</p>
+				<a href="#" class="button yes">Yes</a>
+				<a href="#" class="button no">No</a>
+			</div>
+		</fieldset>
+		<ol class="tabs">
+			<li class="current"><a href="#map" class="button">Map</a></li>
+			<li><a href="#directions" class="button">Driving Directions</a></li>
+			<li><a href="#candidates" class="button">Candidates</a></li>
+		</ol>
+	</header>
+	<section class="landing">
+		<h1>Find Your Polling Place</h1>
+		<h2>Voting Information Project</h2>
+		<p>Please enter your <strong>home</strong> address. We will return the polling place, directions to the polls, and a list of candidates on the ballot for the address entered.</p>
+		<p><strong>Important:</strong> In many states, you must be registered in order to vote. This voting location is only for voters eligible to vote at their home address as entered above. Please verify this voting location with your local election official to ensure that it is correct.</p>
+		<!--<p>Test address:<br />11700 lariat ln oakton va 22124</p>-->
+	</section>
+	<div class="tabcontainer">
+		<ol class="pages">
+			<li class="page map">
+			</li>
+			<li class="page directions">
+			</li>
+			<li class="page candidates">
+			</li>
+		</ol>
+	</div>
+	<menu class="social">
+	  <ul>
+	    <li class="twitter"><a href="http://twitter.com/home?status=I just found my polling place using the @VotingInfo Project tool. Check it out: http://m.votinginfoproject.org" title="Share on Twitter">Twitter</a></li>
+	    <li class="facebook"><a href="http://www.facebook.com/sharer.php?u=I just found my polling place using the Voting Information Project look-up tool. Check it out at: http://m.votinginfoproject.org&amp;t=Voting Info Project" title="Share on Facebook">Facebook</a></li>
+	  </ul>
+	</menu>
+
+</section>
+
+<div class="address-chooser dialog confirm hide">
+  <form name='address-chooser' action='?' method='post'>
+  </form>
+</div>
+
+{% endblock %}
+{% block pagescript %}
+$('#addressForm').submit(tools.addressFormHandler);
+{% endblock %}

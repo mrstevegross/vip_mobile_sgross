@@ -4,7 +4,7 @@ from django.conf.urls.defaults import *
 from django.contrib import admin
 admin.autodiscover()
 
-urlpatterns = patterns('tools.data.views',
+urlpatterns = patterns('vip_mobile.data.views',
     (r'^$', 'start'),
     (r'^data/', 'log'),
     (r'^branded/(?P<state_abbr>\w+)/', 'branded'),

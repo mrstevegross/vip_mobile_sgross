@@ -12,6 +12,10 @@ from django import forms
 #try: import json
 #except: import simplejson as json
 
+from urllib import urlencode
+from urllib2 import urlopen
+import pygeocoder
+
 ######################FORMS##################### (Try to create all forms here)
 
 
@@ -62,11 +66,36 @@ def log(request):
     args = dict(((str(k),str(v)) for k,v in request.POST.iteritems()))
     return HttpResponse(json.dumps(args))
 
-from urllib import urlencode
-from urllib2 import urlopen
+def cleanup_address(address):
+    """
+    Transforms the given address into a (better) formed US address specification.
+    
+    Parameters:
+      address - An address (e.g.: "601 main st se apt 502 minneapolis")
+      
+    Returns:
+      A better-formed address (e.g.: "601 Main St. SE Apt 502, Minneapolis, MN 55414")
+    """
+    results = pygeocoder.Geocoder.geocode(address)
+    address = str(results)
+    return address
+
 def echo(request):
-    args = urlencode(dict(((str(k).replace('address','q'),str(v)) for k,v in request.GET.iteritems())))
-    api_response = urlopen("http://pollinglocation.googleapis.com/?electionid=1766&" + args).read()
+    """
+    Sends a request for polling place listings based on an address.
+    
+    Parameters:
+      request - An object with a 'GET' attribute that is a dictionary. This dictionary
+                should have the key "address" defined, whose value is the address-to-search.
+                
+    Returns:
+      An HttpResponse object for the executed query
+    """
+    new_dict      = dict(((str(k).replace('address','q'), str(v)) for k,v in request.GET.iteritems()))
+    new_dict['q'] = cleanup_address(new_dict['q'])
+    args          = urlencode(new_dict)
+    api_response  = urlopen("http://pollinglocation.googleapis.com/?electionid=1766&" + args).read()
+
     return HttpResponse(api_response, mimetype='application/json')
 
 ################################## PAGES (VIEWS) ################################

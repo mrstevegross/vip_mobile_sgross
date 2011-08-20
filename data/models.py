@@ -64,18 +64,18 @@ class Voter(models.Model):
     A model for storing information about voters. Nothing here is essential. 
     The idea is to add information as it is encountered. Voter id's are stored in the session.
     """
-    email = models.EmailField(null=True, blank=True)
-    address = models.CharField(max_length=200,null=True, blank=True)
-    state = models.CharField(choices=STATE_CHOICES,max_length=2,null=True, blank=True)
-    zip = models.CharField(max_length=11,null=True, blank=True)
-    created = models.DateTimeField(auto_now=True,null=True, blank=True)
-    is_mobile = models.BooleanField(default=False)
-    reverse_geocoded = models.BooleanField(default=False)
-    x_coord = models.CharField(max_length=50,null=True, blank=True)
-    y_coord = models.CharField(max_length=50,null=True, blank=True)
-    has_fb = models.BooleanField(default=False)
-    fb_name = models.CharField(max_length=70,null=True, blank=True)
-    fb_token = models.CharField(max_length=500,null=True, blank=True)
+    email            = models.EmailField   (null=True, blank=True)
+    address          = models.CharField    (max_length=200,null=True, blank=True)
+    state            = models.CharField    (choices=STATE_CHOICES,max_length=2,null=True, blank=True)
+    zip              = models.CharField    (max_length=11,null=True, blank=True)
+    created          = models.DateTimeField(auto_now=True,null=True, blank=True)
+    is_mobile        = models.BooleanField (default=False)
+    reverse_geocoded = models.BooleanField (default=False)
+    x_coord          = models.CharField    (max_length=50,null=True, blank=True)
+    y_coord          = models.CharField    (max_length=50,null=True, blank=True)
+    has_fb           = models.BooleanField (default=False)
+    fb_name          = models.CharField    (max_length=70,null=True, blank=True)
+    fb_token         = models.CharField    (max_length=500,null=True, blank=True)
     
     def log(self,request):
         """

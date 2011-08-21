@@ -89,7 +89,7 @@ vip = function() {
 		  }
 	    },
 
-            showAddressDialog: function() {
+        showAddressDialog: function() {
               // get the screen height and width  
 	      var winWidth = $(window).width();
 	      
@@ -100,9 +100,14 @@ vip = function() {
 	      });
 
 	      message = [message,"</ul><input name='address-submit' class='button' type='submit' value='Find Polling' />"];
+	      
+          var closeAddressDialogCode = "$('.address-chooser').slideUp('fast');";
+	      
+	      message = [message,"<button type='button' onclick=\"",closeAddressDialogCode,"\">Close List</button>"];
+	      
 	      possible_addresses = [];
 	      // display the message
-	      $('.address-chooser form').html(message.join(''));	      
+	      $('.address-chooser form').html(message.join(''));
 
               // calculate the values for center alignment
 	      var dialogTop =  0;  
@@ -284,15 +289,15 @@ vip = function() {
 }();
 
 $(document).bind({
-	init : vip.init,			// Page setup
-	mapSize : vip.mapSize,		// Make JSON request
-	validateAddress : vip.validateAddress,		// Validate the user's address
-        showAddressDialog : vip.showAddressDialog,	// Ask the user which address is theirs
-	getPolls : vip.getPolls,		// Make JSON request
-	setupMap : vip.setupMap,		// Initialize the map
-	calcRoute : vip.calcRoute,		// Calculate and display the route to poll
-	getCandidates : vip.getCandidates,	// Prepare a list of the candidates
-	showCandidates : vip.showCandidates	// Display a list of the candidates
+	init              : vip.init,			   // Page setup
+	mapSize           : vip.mapSize,		   // Make JSON request
+	validateAddress   : vip.validateAddress,   // Validate the user's address
+    showAddressDialog : vip.showAddressDialog, // Ask the user which address is theirs
+	getPolls          : vip.getPolls,		   // Make JSON request
+	setupMap          : vip.setupMap,		   // Initialize the map
+	calcRoute         : vip.calcRoute,		   // Calculate and display the route to poll
+	getCandidates     : vip.getCandidates,	   // Prepare a list of the candidates
+	showCandidates    : vip.showCandidates	   // Display a list of the candidates
 }).ready(function() {
 	$map.trigger('init');
 });

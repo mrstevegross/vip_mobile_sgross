@@ -95,8 +95,9 @@ def echo(request):
     new_dict['q'] = cleanup_address(new_dict['q'])
     args          = urlencode(new_dict)
     api_response  = urlopen("http://pollinglocation.googleapis.com/?electionid=1766&" + args).read()
-
-    return HttpResponse(api_response, mimetype='application/json')
+    http_response = HttpResponse(api_response, mimetype='application/json')
+    
+    return http_response
 
 ################################## PAGES (VIEWS) ################################
 

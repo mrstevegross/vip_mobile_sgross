@@ -182,10 +182,12 @@ vip = function() {
     		    zoom:      7,
     		    mapTypeId: google.maps.MapTypeId.ROADMAP
     		}
+    		var isNamed;
 
             // Parse out the address of the polling location and store in the 'end' variable.
     		$.each(response.locations, function(i, item) { 
     			$.each(item, function(i, c) {
+    			    isNamed = c.address.location_name != '';
 	    			end = [ c.address.location_name,
 	    			        c.address.line1,
 	    			        [ c.address.city, c.address.state].join(', '),
@@ -199,25 +201,42 @@ vip = function() {
     		map.setCenter(new google.maps.LatLng(100, 100)); // Add some default location.
     		directionsDisplay.setMap(map);
     		
-    		$map.trigger('calcRoute');	    // Now that the map is set up, calculate the route to the nearest polling location.
-    		$map.trigger('getCandidates');	// Meanwhile, parse out the elections and candidates from the results.
+    		$map.trigger('calcRoute', [ isNamed ]); // Now that the map is set up, calculate the route to the nearest polling location.
+    		$map.trigger('getCandidates');	        // Meanwhile, parse out the elections and candidates from the results.
 	    },
 	    
 	    // Name: calcRoute
 	    //
 	    // Purpose: Calculates the route.
-	    calcRoute : function() {
+	    //
+	    // Parameters:
+	    //   event   - Event instance (ignored)
+	    //   isNamed - True if there is a location name for the destination; false otherwise.
+	    calcRoute : function(event, isNamed) {
 	    
+            // Put together options for the request:
     		var request = {
 	    	    origin:      start, 
 	    	    destination: end,
 	    	    travelMode:  google.maps.DirectionsTravelMode.DRIVING
 	    	};
-	    	
+
+            // Submit the request:	    	
     		var directionsService = new google.maps.DirectionsService();
     		
     		directionsService.route(request, function(result, status) {
+
+    		    // ON success, set the directions:
 	    		if (status == google.maps.DirectionsStatus.OK) {
+	    		
+                    // Prepend the Unnamed-location text as appropriate:
+                    if (!isNamed) {
+                        legCount = result.routes[0].legs.length
+       	                result.routes[0].legs[legCount - 1].end_address =
+       	                  "Unnamed Location " + result.routes[0].legs[legCount - 1].end_address;
+       	            }
+
+                    // And set the directions:   	                
 	    		    directionsDisplay.setDirections(result);
 	    		}
 		    });

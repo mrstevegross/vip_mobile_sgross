@@ -100,8 +100,6 @@ def echo(request):
     api_response  = urlopen("http://pollinglocation.googleapis.com/?electionid=1766&" + args).read()
     http_response = HttpResponse(api_response, mimetype='application/json')
     
-    print http_response
-    
     return http_response
 
 ################################## PAGES (VIEWS) ################################

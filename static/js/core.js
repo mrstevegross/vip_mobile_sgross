@@ -146,6 +146,8 @@ vip = function() {
 	    // Name: getPolls
 	    //
 	    // Purpose: Submit a request for polling locations and up the UI with the results.
+	    //
+	    // Implementation note: The ajax request is processed by data/views.py:echo().
 	    getPolls : function() {
     		$.ajax({
 	    		url:      '/electioncenter',
@@ -173,7 +175,13 @@ vip = function() {
 	    },
 	    
 	    // Function: setupMap
+	    //
 	    // Purpose: Sets up the map.
+	    //
+	    // Parameters: None
+	    //
+	    // Returns: None
+	    //
 	    setupMap : function() {	
     		$('.directions, .candidates').html(''); // Empty the candidates/direction lists.
 			
@@ -207,11 +215,14 @@ vip = function() {
 	    
 	    // Name: calcRoute
 	    //
-	    // Purpose: Calculates the route.
+	    // Purpose: Calculates and renders the route.
 	    //
 	    // Parameters:
 	    //   event   - Event instance (ignored)
 	    //   isNamed - True if there is a location name for the destination; false otherwise.
+	    //
+	    // Returns:
+	    //   Nothing
 	    calcRoute : function(event, isNamed) {
 	    
             // Put together options for the request:

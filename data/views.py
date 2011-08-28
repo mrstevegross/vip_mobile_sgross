@@ -71,14 +71,21 @@ def cleanup_address(address):
     Transforms the given address into a (better) formed US address specification.
     
     Parameters:
-      address - An address (e.g.: "601 main st se apt 502 minneapolis")
+      address - An address (e.g.: "601 main st se apt 502 minneapolis").
+                Note: This can also handle an incomplete address, such as "Richmond VA".
       
     Returns:
       A better-formed address (e.g.: "601 Main St. SE Apt 502, Minneapolis, MN 55414")
-    """
-    results = pygeocoder.Geocoder.geocode(address)
-    address = str(results)
-    return address
+    """    
+    # Extract a lat/long from the address:
+    x = pygeocoder.Geocoder.geocode(address)
+    latlng = x[0].__dict__['current']['geometry']['location']
+    
+    # Now convert the lat/long back into a well-formed addressL
+    results = pygeocoder.Geocoder.reverse_geocode(latlng['lat'], latlng['lng'])
+
+    # And return it as a string:    
+    return str(results)
 
 def echo(request):
     """
@@ -95,6 +102,7 @@ def echo(request):
     new_dict['q'] = cleanup_address(new_dict['q'])
     args          = urlencode(new_dict)
     
+    # And submit the address request to the pollinglocation API:    
     # For full information on the API, see:
     #   http://electioncenter.googlelabs.com/apidoc_v1_1.html
     api_response  = urlopen("http://pollinglocation.googleapis.com/?electionid=1766&" + args).read()

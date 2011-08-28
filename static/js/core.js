@@ -190,26 +190,28 @@ vip = function() {
     		    zoom:      7,
     		    mapTypeId: google.maps.MapTypeId.ROADMAP
     		}
-    		var isNamed;
+    		var locationName = "Unnamed Location";
 
             // Parse out the address of the polling location and store in the 'end' variable.
     		$.each(response.locations, function(i, item) { 
     			$.each(item, function(i, c) {
-    			    isNamed = c.address.location_name != '';
-	    			end = [ c.address.location_name,
-	    			        c.address.line1,
+
+    			    if(c.address.location_name != '') {
+    			        locationName = c.address.location_name;
+    			    }
+    			    
+	    			end = [ c.address.line1,
 	    			        [ c.address.city, c.address.state].join(', '),
 	    			        c.address.zip
 	    			      ].join(' ');
 	   		    });
 	   	    });
-
+	   	    
             // Create a Map instance and connect it to the directionsDisplay:
     		map = new google.maps.Map($map.get(0), opt);
-    		map.setCenter(new google.maps.LatLng(100, 100)); // Add some default location.
     		directionsDisplay.setMap(map);
     		
-    		$map.trigger('calcRoute', [ isNamed ]); // Now that the map is set up, calculate the route to the nearest polling location.
+    		$map.trigger('calcRoute', [ locationName ]); // Now that the map is set up, calculate the route to the nearest polling location.
     		$map.trigger('getCandidates');	        // Meanwhile, parse out the elections and candidates from the results.
 	    },
 	    
@@ -218,12 +220,12 @@ vip = function() {
 	    // Purpose: Calculates and renders the route.
 	    //
 	    // Parameters:
-	    //   event   - Event instance (ignored)
-	    //   isNamed - True if there is a location name for the destination; false otherwise.
+	    //   event        - Event instance (ignored)
+	    //   locationName - Name of location
 	    //
 	    // Returns:
 	    //   Nothing
-	    calcRoute : function(event, isNamed) {
+	    calcRoute : function(event, locationName) {
 	    
             // Put together options for the request:
     		var request = {
@@ -240,13 +242,11 @@ vip = function() {
     		    // ON success, set the directions:
 	    		if (status == google.maps.DirectionsStatus.OK) {
 	    		
-                    // Prepend the Unnamed-location text as appropriate:
-                    if (!isNamed) {
-                        legCount = result.routes[0].legs.length
-       	                result.routes[0].legs[legCount - 1].end_address =
-       	                  "Unnamed Location " + result.routes[0].legs[legCount - 1].end_address;
-       	            }
-
+                    // Prepend the location name:
+                    var legCount = result.routes[0].legs.length
+  	                result.routes[0].legs[legCount - 1].end_address =
+       	                  locationName + " " + result.routes[0].legs[legCount - 1].end_address;
+       	            
                     // And set the directions:   	                
 	    		    directionsDisplay.setDirections(result);
 	    		}

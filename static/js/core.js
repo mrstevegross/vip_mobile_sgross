@@ -186,13 +186,17 @@ vip = function() {
     		$('.directions, .candidates').html(''); // Empty the candidates/direction lists.
 			
     		directionsDisplay = new google.maps.DirectionsRenderer();
-    		var opt = {
-    		    zoom:      7,
-    		    mapTypeId: google.maps.MapTypeId.ROADMAP
-    		}
+    		var opt = { zoom: 7, mapTypeId: google.maps.MapTypeId.ROADMAP }
     		var locationName = "Unnamed Location";
 
+            // Clean up the start text given the response data:
+            start = response.normalized_input.line1 + ", "
+                  + response.normalized_input.city  + ", "
+                  + response.normalized_input.state + " "
+                  + response.normalized_input.zip
+
             // Parse out the address of the polling location and store in the 'end' variable.
+            // TODO: Although we're processing a list, we assume there's only a single element. Gotta work on that.
     		$.each(response.locations, function(i, item) { 
     			$.each(item, function(i, c) {
 
@@ -212,7 +216,7 @@ vip = function() {
     		directionsDisplay.setMap(map);
     		
     		$map.trigger('calcRoute', [ locationName ]); // Now that the map is set up, calculate the route to the nearest polling location.
-    		$map.trigger('getCandidates');	        // Meanwhile, parse out the elections and candidates from the results.
+    		$map.trigger('getCandidates');	             // Meanwhile, parse out the elections and candidates from the results.
 	    },
 	    
 	    // Name: calcRoute

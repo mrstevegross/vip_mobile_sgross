@@ -98,6 +98,8 @@ def echo(request):
     Returns:
       An HttpResponse object for the executed query
     """
+    
+    # Fix up the args for the request:
     new_dict      = dict(((str(k).replace('address','q'), str(v)) for k,v in request.GET.iteritems()))
     new_dict['q'] = cleanup_address(new_dict['q'])
     args          = urlencode(new_dict)

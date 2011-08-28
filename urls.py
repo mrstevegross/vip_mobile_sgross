@@ -5,10 +5,10 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('vip_mobile.data.views',
-    (r'^$', 'start'),
-    (r'^data/', 'log'),
+    (r'^$',                            'start'),
+    (r'^data/',                        'log'),
     (r'^branded/(?P<state_abbr>\w+)/', 'branded'),
-    (r'^electioncenter', 'echo'),
+    (r'^electioncenter',               'echo'),
 )
 
 urlpatterns += patterns('',

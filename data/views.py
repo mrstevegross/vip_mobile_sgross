@@ -16,10 +16,7 @@ from urllib import urlencode
 from urllib2 import urlopen
 import pygeocoder
 
-######################FORMS##################### (Try to create all forms here)
-
-
-
+###################### FORMS #####################
 
 class ManualVoterForm(forms.ModelForm):
     """
@@ -29,8 +26,7 @@ class ManualVoterForm(forms.ModelForm):
         model = Voter
         fields = ['address','state']
 
-
-#########################HELPERS###################################
+######################### HELPERS ###################################
 
 def capture_voter(request):
     """
@@ -55,14 +51,18 @@ def capture_voter(request):
         request.session['voter_id'] = voter.id
     return voter
 
-
-
-
-##################################SERVICES (VIEWS)################################
-
-
+################################## SERVICES (VIEWS) ################################
 
 def log(request):
+    """
+    ???
+    
+    Parameters:
+      request - ???
+      
+    Returns:
+      ???
+    """
     args = dict(((str(k),str(v)) for k,v in request.POST.iteritems()))
     return HttpResponse(json.dumps(args))
 
@@ -94,15 +94,28 @@ def echo(request):
     new_dict      = dict(((str(k).replace('address','q'), str(v)) for k,v in request.GET.iteritems()))
     new_dict['q'] = cleanup_address(new_dict['q'])
     args          = urlencode(new_dict)
+    
+    # For full information on the API, see:
+    #   http://electioncenter.googlelabs.com/apidoc_v1_1.html
     api_response  = urlopen("http://pollinglocation.googleapis.com/?electionid=1766&" + args).read()
     http_response = HttpResponse(api_response, mimetype='application/json')
+    
+    print http_response
     
     return http_response
 
 ################################## PAGES (VIEWS) ################################
 
 def start(request):
-    """Shows lookup form."""
+    """
+    Shows lookup form.
+    
+    Parameters:
+      request - ???
+      
+    Returns:
+      ???
+    """
     voter = capture_voter(request)
     data = {'address_form':ManualVoterForm()}
     return render_to_response('start.html',data)
@@ -114,6 +127,7 @@ def branded(request,state_abbr):
         data = {'address_form':ManualVoterForm(), 'state_abbr':state_abbr}
     except:
         raise Http404
+        
     return render_to_response('branded.html',data)
 
 def directions(request):
@@ -135,3 +149,4 @@ def details(request):
     """Not implemented"""
     voter = capture_voter(request)
     return render_to_response('details.html',{})
+

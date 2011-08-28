@@ -98,8 +98,18 @@ vip = function() {
 	      
 	      var message = "<h3>Are any of these your address?</h3><ul>";
 
-	      $.each(possible_addresses, function(i,obj) {
-	        message = [message,"<li><input type='radio' name='address-select' id='address-select-",i,"' value='",obj.address,"' />", "<label for='address-select-",i,"'>",obj.address,"</label></li>"].join('');
+	      $.each(possible_addresses, function(i, obj) {
+	        message = [ message,
+	                    "<li><input type='radio' name='address-select' id='address-select-",
+	                    i,
+	                    "' value='",
+	                    obj.address,
+	                    "' />", 
+	                    "<label for='address-select-",
+	                    i,
+	                    "'>",
+	                    obj.address,
+	                    "</label></li>" ].join('');
 	      });
 
 	      message = [message,"</ul><input name='address-submit' class='button' type='submit' value='Find Polling' />"];
@@ -132,6 +142,10 @@ vip = function() {
 			    });
 		    });
 	    },
+	    
+	    // Name: getPolls
+	    //
+	    // Purpose: Submit a request for polling locations and up the UI with the results.
 	    getPolls : function() {
     		$.ajax({
 	    		url:      '/electioncenter',
@@ -172,7 +186,8 @@ vip = function() {
             // Parse out the address of the polling location and store in the 'end' variable.
     		$.each(response.locations, function(i, item) { 
     			$.each(item, function(i, c) {
-	    			end = [ c.address.line1,
+	    			end = [ c.address.location_name,
+	    			        c.address.line1,
 	    			        [ c.address.city, c.address.state].join(', '),
 	    			        c.address.zip
 	    			      ].join(' ');
@@ -278,8 +293,8 @@ vip = function() {
     		$('.tabcontainer').height(mapheight - head);
 
 //          Uncomment the following lines to fix the map rendering. sgross 27 Aug 2011   		
-//    		$('.map').height('400px');
-//    		$('.map').width('400px');
+       	    $('.map').height('400px');
+    	    $('.map').width('400px');
     		
 	    },
 	    
@@ -334,14 +349,22 @@ $('header form').submit(function(e) {
 	e.preventDefault();
 });
 
+// Define how a submit action will be handled.
 $('.address-chooser form').submit(function(e) {
-        e.preventDefault();
-        if($('input:radio[name=address-select]')) {
-	  start = $('input:radio[name=address-select]:checked').val().replace(/#/g,encodeURIComponent('#'));
-	  $('.address-chooser').slideUp('fast');
-	  $map.trigger('getPolls');
-	} else {
-          vip.showAlert("Please select your address.",'alert');
+
+    e.preventDefault();
+    
+    if($('input:radio[name=address-select]')) {
+        start = $('input:radio[name=address-select]:checked').val().replace(/#/g,encodeURIComponent('#'));
+        
+        // Make the address chooser slide away:
+	    $('.address-chooser').slideUp('fast');
+	    
+	    // Get the poll locations:
+	    $map.trigger('getPolls');
+	}
+	else {
+        vip.showAlert("Please select your address.",'alert');
 	}
 });
 

@@ -15,6 +15,8 @@ from django import forms
 from urllib import urlencode
 from urllib2 import urlopen
 import pygeocoder
+import re
+import json
 
 ###################### FORMS #####################
 
@@ -77,15 +79,25 @@ def cleanup_address(address):
     Returns:
       A better-formed address (e.g.: "601 Main St. SE Apt 502, Minneapolis, MN 55414")
     """    
+    cleaned_address = ""
+    
     # Extract a lat/long from the address:
     x = pygeocoder.Geocoder.geocode(address)
     latlng = x[0].__dict__['current']['geometry']['location']
-    
+        
     # Now convert the lat/long back into a well-formed addressL
     results = pygeocoder.Geocoder.reverse_geocode(latlng['lat'], latlng['lng'])
-
-    # And return it as a string:    
-    return str(results)
+    
+    # If the address returned is a range, pick the average:
+    address_range = re.match("^(\d+)-(\d+)(.+)", str(results))
+    if address_range:
+        min, max        = int(address_range.groups()[0]),  int(address_range.groups()[1])
+        avg             = int((min + max) / 2)
+        cleaned_address = "%d%s" % (avg, address_range.groups()[2])
+    else:
+        cleaned_address = str(results)
+    
+    return cleaned_address
 
 def echo(request):
     """
@@ -100,16 +112,28 @@ def echo(request):
     """
     
     # Fix up the args for the request:
-    new_dict      = dict(((str(k).replace('address','q'), str(v)) for k,v in request.GET.iteritems()))
-    new_dict['q'] = cleanup_address(new_dict['q'])
-    args          = urlencode(new_dict)
+    new_dict = dict(((str(k).replace('address','q'), str(v)) for k,v in request.GET.iteritems()))
     
-    # And submit the address request to the pollinglocation API:    
-    # For full information on the API, see:
-    #   http://electioncenter.googlelabs.com/apidoc_v1_1.html
-    api_response  = urlopen("http://pollinglocation.googleapis.com/?electionid=1766&" + args).read()
-    http_response = HttpResponse(api_response, mimetype='application/json')
+    # Set up a list of addresses to try:
+    addresses = [ new_dict['q'], cleanup_address(new_dict['q']) ]
     
+    # Try each address until we get something usable:
+    for address in addresses:
+    
+        # Submit the address request to the pollinglocation API:    
+        # For full information on the API, see:
+        #   http://electioncenter.googlelabs.com/apidoc_v1_1.html
+        new_dict['q'] = address
+        args          = urlencode(new_dict)
+        api_response  = urlopen("http://pollinglocation.googleapis.com/?electionid=1766&" + args).read()
+        json_response = json.loads(api_response)
+        http_response = HttpResponse(api_response, mimetype='application/json')
+        
+        # If we succeeded, break out of the loop:
+        if json_response['status'] == 'SUCCESS':
+            break
+
+    # Don't forget to return the response object:            
     return http_response
 
 ################################## PAGES (VIEWS) ################################

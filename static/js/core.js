@@ -196,21 +196,18 @@ vip = function() {
                   + response.normalized_input.zip
 
             // Parse out the address of the polling location and store in the 'end' variable.
-            // TODO: Although we're processing a list, we assume there's only a single element. Gotta work on that.
-    		$.each(response.locations, function(i, item) { 
-    			$.each(item, function(i, c) {
+            // Note: We're just using the first address returned for now.
+            var address = response.locations[0].address
 
-    			    if(c.address.location_name != '') {
-    			        locationName = c.address.location_name;
-    			    }
+		    if(address.location_name != '') {
+    	        locationName = address.location_name;
+		    }
     			    
-	    			end = [ c.address.line1,
-	    			        [ c.address.city, c.address.state].join(', '),
-	    			        c.address.zip
-	    			      ].join(' ');
-	   		    });
-	   	    });
-	   	    
+   			end = [ address.line1,
+   			        [ address.city, address.state].join(', '),
+   			        address.zip
+   			      ].join(' ');
+
             // Create a Map instance and connect it to the directionsDisplay:
     		map = new google.maps.Map($map.get(0), opt);
     		directionsDisplay.setMap(map);
@@ -261,24 +258,55 @@ vip = function() {
 	    
 	    // Function: getCandidates
 	    //
-	    // Purpose: ???
-	    getCandidates : function() {
-    		$.each(response.contests, function(i,item) {
-    			$.each(item, function(i, c) {
-    				offices[i] = new Array();
-	    			var candidates = new Array();
-		    		offices[i][0] = c.office || '';
-    				$.each(c.ballot.candidate, function(i, a) {						
-    					candidates[i] = new Array();
-	    				candidates[i]['name']  = a.name;
-		    			candidates[i]['email'] = a.email || '';
-			    		candidates[i]['url']   = a.candidate_url || '';
-				    	candidates[i]['party'] = a.party;						
-				    });
+	    // Purpose: Process the contests portion of the election API response.
+	    //
+   	    //    "contests": [
+        //    {
+        //      "dataset_id": 1869,
+        //      "election_id": 1766,
+        //      "id": "1869:7004503294244",
+        //      "type": "General",
+        //      "partisan": "no",
+        //      "office": "Commissioner of Insurance",
+        //      "ballot": {
+        //        "candidate": [
+        //          {
+        //            "id": 900619,
+        //            "name": "Sandy Praeger",
+        //            "party": "Republican",
+        //            "filed_mailing_address": {
+        //              "line1": "",
+        //              "line2": "",
+        //              "line3": "",
+        //              "city": "",
+        //              "state": "KS",
+        //              "zip": ""
+        //            }
+        //          }
+        //        ]
+        //      }
+        //    },
 
-    				offices[i][1] = candidates;
+	    getCandidates : function() {
+	    
+	        // For each contest:
+    		$.each(response.contests, function(i, c) {
+    		
+				offices[i] = new Array();
+    			var candidates = new Array();
+	    		offices[i][0] = c.office || 'Unnamed Office';
+				$.each(c.ballot.candidate, function(i, a) {						
+				
+					candidates[i] = new Array();
+    				candidates[i]['name']  = a.name;
+	    			candidates[i]['email'] = a.email || '';
+		    		candidates[i]['url']   = a.candidate_url || '';
+			    	candidates[i]['party'] = a.party;						
 			    });
+
+				offices[i][1] = candidates;
 		    });
+		    
     		$map.trigger('showCandidates'); 
 	    },
 	    

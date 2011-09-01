@@ -133,6 +133,7 @@ def echo(request):
         if json_response['status'] == 'SUCCESS':
             break
 
+    print http_response
     # Don't forget to return the response object:            
     return http_response
 

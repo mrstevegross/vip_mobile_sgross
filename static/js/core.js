@@ -10,7 +10,25 @@ response,
 position,
 directionsDisplay,
 
+// Represents the list of found contests.
+// Each item in the list is a 2-item list, where:
+//   The first item is the name of the office;
+//   The second item is a list of candidates for that office.
+//     Each item in that list is a hash table with keys:
+//      name - Name of candidate
+//      email - Email address of candidate
+//      url   - URL for candidates' website
+//      party - Party affiliation of candidate
+//
+//  e.g.:
+//  [ 'Commissioner of Insurance',
+//    [ { name: 'Steve', email: 'sgross@gmail.com', url: 'http://cnn.com'; party: 'dnc'   }, 
+//      { name: 'Bob',   email: 'bob@gmail.com',    url: 'http://cnn.com'; party: 'repub' }
+//    ]
+//  ] 
+//
 offices            = [],
+
 candidates         = [],
 possible_addresses = [],
 
@@ -310,7 +328,15 @@ vip = function() {
     		$map.trigger('showCandidates'); 
 	    },
 	    
-	    showCandidates : function() {
+	    // Name: showCandidates
+	    //
+	    // Purpose: Render the candidates information as HTML.
+        //  [ 'Commissioner of Insurance',
+        //    [ { name: 'Steve', email: 'sgross@gmail.com', url: 'http://cnn.com'; party: 'dnc'   }, 
+        //      { name: 'Bob',   email: 'bob@gmail.com',    url: 'http://cnn.com'; party: 'repub' }
+        //    ]
+        //  ]    
+   	    showCandidates : function() {
 		$('<ul />').addClass('elections').appendTo($candidates);
 		$.each(offices, function(i, a){	
 			$('<li />').appendTo($candidates.find('.elections'));

@@ -49,67 +49,81 @@ vip = function() {
 			$('.finding').removeClass('finding');
 			$map.trigger("getPolls");
 		},
+		
 		validateAddress: function() {
-		  possible_addresses = [];
-		  validator = new google.maps.Geocoder();
-		  validator.geocode({address:start},geoHandler);
+            possible_addresses = [];
+            validator          = new google.maps.Geocoder();
+
+            validator.geocode({ address: start }, handle_lookup_by_address);
+            
+            function handle_invalid_status(status) {
+                switch (status) {
+                    case 'INVALID_REQUEST':  vip.showAlert("Well...that didn't work.",'alert');                                           break;
+                    case 'ERROR':            vip.showAlert("It seems the Google servers are down...",'alert');                            break;
+                    case 'UNKNOWN_ERROR':    vip.showAlert("I have no idea what happened, but it might work if you try, again.",'alert'); break;
+                    case 'ZERO_RESULTS':     vip.showAlert("I couldn't locate your street address: " + start + ". Sorry :(", 'alert');    break;
+                    case 'OVER_QUERY_LIMIT': vip.showAlert("Sorry...I've gone over my request limit :(");                                 break;
+                }
+            };
+
+            function handle_lookup_by_address(resp, status) {
+                if(status == 'OK') {
+
+                    // Assemble list of possible addresses:
+                    for(var i = 0; i < resp.length; i++) {
+                        var addr = resp[i].address_components.map(function(item) { return item.long_name } ).join(' ');
+                        possible_addresses.push({ address: addr, partial_match: resp[i].hasOwnProperty('partial_match') });
+                    }
+
+                    // If there was only 1, try reverse-geocoding to get a better expression of the address:                        
+                    if(resp.length == 1) {
+                        validator.geocode({ location: resp[0].geometry.location }, handle_lookup_by_location);
+                    }
+                    else {
+                        handle_possible_addresses();
+                    }
+                }
+                else {
+                    handle_invalid_status(status);
+                }
+            };
+            
+            function handle_lookup_by_location(resp, status) {
+                if(status == 'OK') {
+                    var geocoded_address = resp[0].address_components.map(function(item) { return item.long_name } ).join(' ');
+                    possible_addresses.push({ address: geocoded_address });
+                    handle_possible_addresses();
+                }
+                else {
+                    handle_invalid_status(status);
+                }
+                
+            };
 		  
-		  function geoHandler(resp,status) {
-		    switch (status) {
-		      case 'OK':
-			var len = resp.length;
+            function handle_possible_addresses() {
+	            if(possible_addresses.length > 1) {
+                    $map.trigger("showAddressDialog");
+	    		}
+	    		else if(possible_addresses.length == 1) {
+                    start = possible_addresses[0].address;
 
-			while(len--) {
-			  possible_addresses.push(
-			    {
-			      address: resp[len].formatted_address,
-                              partial_match: resp[len].hasOwnProperty('partial_match')
-			    }
-			  );
-			}
+                    if(possible_addresses[0].partial_match) {
+        			    vip.showAlert("This address is a partial match. Please make sure the below address your house address.", 'alert');
+                    }
 
-			if(possible_addresses.length > 1) {
-			  $map.trigger("showAddressDialog");
-			} else if(possible_addresses.length==1){
-			  start = possible_addresses[0].address;
-
-			  if(possible_addresses[0].partial_match) {
-			    vip.showAlert("This address is a partial match. Please make sure the below address your house address.",'alert');
-			  }
-
-			  $map.trigger("getPolls");
-			} else {
-			  vip.showAlert("I couldn't locate your street address: " + start + ". Sorry :(", 'alert');
-			}
-			break;
-
-		      case 'REQUEST_DENIED':
-			vip.showAlert("GOOGLE SAYS NO!",'alert');
-			break;
-
-		      case 'INVALID_REQUEST':
-			vip.showAlert("Well...that didn't work.",'alert');
-			break;
-
-		      case 'ERROR':
-		        vip.showAlert("It seems the Google servers are down...",'alert');
-			break;
-
-		      case 'UNKNOWN_ERROR':
-			vip.showAlert("I have no idea what happened, but it might work if you try, again.",'alert');
-			break;
-
-		      case 'ZERO_RESULTS':
-			vip.showAlert("I couldn't locate your street address: " + start + ". Sorry :(", 'alert');
-			break;
-
-		      case 'OVER_QUERY_LIMIT':
-                        vip.showAlert("Sorry...I've gone over my request limit :(");
-			break;
-		    }
-		  }
+                    $map.trigger("getPolls");
+    			}
+    			else {
+                    vip.showAlert("I couldn't locate your street address: " + start + ". Sorry :(", 'alert');
+                }
+            };
 	    },
 
+        // Name: showAddressDialog
+        //
+        // Purpose: Display the address-chooser dialog.
+        //
+        //
         showAddressDialog: function() {
               // get the screen height and width  
 	      var winWidth = $(window).width();

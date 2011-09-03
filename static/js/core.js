@@ -90,6 +90,19 @@ vip = function() {
             
             function handle_lookup_by_location(resp, status) {
                 if(status == 'OK') {
+
+                    // Google might have returned an address range; if so, pick the average street address from the range:                
+                    var addr_range_pat = /^(\d+)-(\d+)$/;
+                    var match          = addr_range_pat.exec(resp[0].address_components[0].long_name);
+                    
+                    if(match) {
+                        var min = parseInt(match[1]);
+                        var max = parseInt(match[2]);
+                        var avg = Math.round((min + max) / 2.0);
+                      
+                        resp[0].address_components[0].long_name = avg;
+                    }
+                
                     var geocoded_address = resp[0].address_components.map(function(item) { return item.long_name } ).join(' ');
                     possible_addresses.push({ address: geocoded_address });
                     handle_possible_addresses();
@@ -151,10 +164,11 @@ vip = function() {
 	      message = [message,"<button type='button' onclick=\"",closeAddressDialogCode,"\">Close List</button>"];
 	      
 	      possible_addresses = [];
+	      
 	      // display the message
 	      $('.address-chooser form').html(message.join(''));
 
-              // calculate the values for center alignment
+          // calculate the values for center alignment
 	      var dialogTop =  0;  
 	      var dialogLeft = (winWidth/2) - ($('.address-chooser').width()/2);
 

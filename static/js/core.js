@@ -50,12 +50,51 @@ vip = function() {
 			$map.trigger("getPolls");
 		},
 		
+		
 		validateAddress: function() {
             possible_addresses = [];
             validator          = new google.maps.Geocoder();
 
             validator.geocode({ address: start }, handle_lookup_by_address);
             
+    		// Name: assembleAddress
+    		//
+    		// Purpose: Take a GeocoderResult and turn it into a single-string address.
+    		//
+    		// Parameters:
+    		//    g - A GeocoderResult instance
+    		//
+    		// Returns:
+    		//    A single-string representation of the full address.
+    		function assembleAddress(g) {
+    		    var components = [];
+    		    
+    		    // Examine each address component:
+    		    for(var i = 0; i < g.address_components.length; i++) {
+    		        var usable = true; // Assume it's ok to start:
+		        
+    		        // Examine each type:
+    		        for(var j = 0; j < g.address_components[i].types.length; j++) {
+    		        
+    		            // If the type is an 'administrative' unit, make sure it is only level 1:
+    		            var admin_unit_pat = /administrative_area_level_(\d+)/;
+                        var match          = admin_unit_pat.exec(g.address_components[i].types[j]);
+                    
+                        if(match) {
+                            var admin_unit_level = parseInt(match[1]);
+                            if(admin_unit_level != 1) { usable = false; }                    
+                        }
+    		        } // End of loop-across-types
+		        
+	    	        if(usable) {
+	    	            components.push(g.address_components[i].long_name);
+	    	        }
+	    	    } // End of loop-across-address-components
+	    	    
+                // Join 'em on a space and return:
+                return components.join(' ');
+        	};
+		
             function handle_invalid_status(status) {
                 switch (status) {
                     case 'INVALID_REQUEST':  vip.showAlert("Well...that didn't work.",'alert');                                           break;
@@ -71,7 +110,7 @@ vip = function() {
 
                     // Assemble list of possible addresses:
                     for(var i = 0; i < resp.length; i++) {
-                        var addr = resp[i].address_components.map(function(item) { return item.long_name } ).join(' ');
+                        var addr = assembleAddress(resp[i]);
                         possible_addresses.push({ address: addr, partial_match: resp[i].hasOwnProperty('partial_match') });
                     }
 
@@ -103,14 +142,13 @@ vip = function() {
                         resp[0].address_components[0].long_name = avg;
                     }
                 
-                    var geocoded_address = resp[0].address_components.map(function(item) { return item.long_name } ).join(' ');
+                    var geocoded_address = assembleAddress(resp[0]);
                     possible_addresses.push({ address: geocoded_address });
                     handle_possible_addresses();
                 }
                 else {
                     handle_invalid_status(status);
                 }
-                
             };
 		  
             function handle_possible_addresses() {
@@ -157,11 +195,11 @@ vip = function() {
 	                    "</label></li>" ].join('');
 	      });
 
-	      message = [message,"</ul><input name='address-submit' class='button' type='submit' value='Find Polling' />"];
-	      
           var closeAddressDialogCode = "$('.address-chooser').slideUp('fast');";
-	      
-	      message = [message,"<button type='button' onclick=\"",closeAddressDialogCode,"\">Close List</button>"];
+          
+	      message = [message,
+	                 "</ul><input name='address-submit' class='button' type='submit' value='Find Polling' />",
+	                 "<button class='button' type='button' onclick=\"", closeAddressDialogCode, "\">Close List</button>"];
 	      
 	      possible_addresses = [];
 	      
